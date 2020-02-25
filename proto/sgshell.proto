@@ -1,0 +1,31 @@
+login 1 {
+    termId: number8;
+    host: string;
+    port: number16;
+    user: string;
+    passwd: string;
+    type: number8;
+    key: string;
+    row: number16;
+    col: number16;
+}
+
+loginResponse 2 {
+    termId: number8;
+    code: number8;
+    msg: string;
+}
+
+session 3 {
+    termId: number8;
+    msg: string;
+}
+
+logout 4 {
+    termId: number8;
+}
+
+resize 5 {
+    row: number16;
+    col: number16;
+}
