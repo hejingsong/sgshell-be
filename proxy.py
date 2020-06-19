@@ -2,11 +2,11 @@
 # -*- coding:utf-8 -*-
 
 import socket
-import sgProto
 
 import ssh
 import logger
 import basesocket
+import utils.encoder
 
 PROTO_LOGIN = 1
 PROTO_SESSION = 3
@@ -35,6 +35,7 @@ class Proxy(basesocket.BaseSocket):
         self.pong = False
         self.remainData = b''
         self.sshs = {}
+        self.encoder = utils.encoder.Encoder()
 
     def close(self, ioLoop):
         ioLoop.delEvent(self, ioLoop.E_ALL)
@@ -57,7 +58,7 @@ class Proxy(basesocket.BaseSocket):
             self.pong = False
             self.sendData(result, self.WEBSOCKET_OPECODE_PONG)
         else:
-            proIdx, data = sgProto.decode(result)
+            proIdx, data = self.encoder.decode(result)
             response = self.do(ioLoop, proIdx, data)
             if not response:
                 return
@@ -170,10 +171,10 @@ class Proxy(basesocket.BaseSocket):
         oSsh = ssh.Ssh(None, self, data)
         ret = oSsh.login()
         if ret:
-            return sgProto.encode('loginResponse', {'code': -1, 'termId': termId, 'msg': ret})
+            return self.encoder.encode('loginResponse', {'code': -1, 'termId': termId, 'msg': ret})
         ioLoop.addEvent(oSsh, ioLoop.E_READ)
         self.sshs[termId] = oSsh
-        return sgProto.encode('loginResponse', {'code': 0, 'termId': termId})
+        return self.encoder.encode('loginResponse', {'code': 0, 'termId': termId})
 
     def session(self, ioLoop, data):
         termId = data['termId']
@@ -203,11 +204,11 @@ class Proxy(basesocket.BaseSocket):
 
     # call by ssh
     def sshLogout(self, termId, ioLoop):
-        data = sgProto.encode('logout', {'termId': termId})
+        data = self.encoder.encode('logout', {'termId': termId})
         self.sendData(data)
         self.sshs.pop(termId)
 
     # call by ssh
     def sshSession(self, termId, msg, ioLoop):
-        data = sgProto.encode('session', {'termId': termId, 'msg': msg})
+        data = self.encoder.encode('session', {'termId': termId, 'msg': msg})
         self.sendData(data)
