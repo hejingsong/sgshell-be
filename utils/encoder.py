@@ -9,7 +9,7 @@ import utils.singleton as singleton
 class Encoder(object):
 
     def init(self, protoFile):
-        sgProto.parseFromFile(protoFile)
+        sgProto.parseFile(protoFile)
 
     def encode(self, protoName, data):
         code = sgProto.encode(protoName, data)
